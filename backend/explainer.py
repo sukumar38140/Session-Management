@@ -2,6 +2,7 @@
 backend/explainer.py
 SHAP TreeExplainer engine for SmartSession.
 Computes feature attribution and formats plain-English explanations for Model predictions.
+Supports LightGBM and GradientBoostingClassifier natively with zero system library requirements.
 Handles cold start users ('new' cohort prior).
 """
 
@@ -24,7 +25,8 @@ class IntentExplainer:
         meta_path = os.path.join(models_dir, 'metadata.json')
         
         if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found at {model_path}. Train model first.")
+            from backend.train_model import train_intent_model
+            train_intent_model()
             
         self.clf = joblib.load(model_path)
         self.encoders = joblib.load(encoders_path)
@@ -45,7 +47,6 @@ class IntentExplainer:
             val = raw_dict.get(col, 0)
             if col in self.cat_cols:
                 le = self.encoders[col]
-                # Fallback for unseen categories
                 val_str = str(val)
                 if val_str in le.classes_:
                     row_dict[col] = le.transform([val_str])[0]
@@ -98,16 +99,17 @@ class IntentExplainer:
         intent_label = 'act' if act_prob >= 0.5 else 'browse'
         confidence = round(float(max(probas) * 100.0), 1)
         
-        # Calculate SHAP values
+        # Calculate SHAP values safely
         shap_vals = self.explainer.shap_values(df_row)
         
         if isinstance(shap_vals, list):
-            # Class 1 (Act Mode) SHAP attributions
             vals = shap_vals[1][0] if len(shap_vals) > 1 else shap_vals[0][0]
         elif len(np.shape(shap_vals)) == 3:
             vals = shap_vals[0, :, 1]
-        else:
+        elif len(np.shape(shap_vals)) == 2:
             vals = shap_vals[0]
+        else:
+            vals = shap_vals
             
         # Calculate percentage contributions of top features
         abs_vals = np.abs(vals)

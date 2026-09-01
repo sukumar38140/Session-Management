@@ -17,22 +17,23 @@
     "network_type",
     "user_cohort"
   ],
+  "model_type": "LightGBM",
   "metrics": {
     "accuracy": 0.9185,
     "f1_weighted": 0.9178741885434509,
     "auc_roc": 0.8972903610127303
   },
   "feature_importances": {
-    "scroll_velocity": 2390,
-    "session_gap_hours": 2337,
-    "time_of_day": 1077,
-    "day_of_week": 658,
-    "user_cohort": 435,
-    "first_tap_depth": 386,
-    "entry_point": 292,
-    "network_type": 234,
-    "previous_session_converted": 213,
-    "regional_event_active": 109,
-    "is_weekend": 9
+    "scroll_velocity": 2390.0,
+    "session_gap_hours": 2337.0,
+    "time_of_day": 1077.0,
+    "day_of_week": 658.0,
+    "user_cohort": 435.0,
+    "first_tap_depth": 386.0,
+    "entry_point": 292.0,
+    "network_type": 234.0,
+    "previous_session_converted": 213.0,
+    "regional_event_active": 109.0,
+    "is_weekend": 9.0
   }
 }
