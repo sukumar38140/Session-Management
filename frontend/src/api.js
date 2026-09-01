@@ -1,9 +1,10 @@
 /**
  * frontend/src/api.js
  * Central API client module for SmartSession FastAPI backend.
+ * Dynamically supports production deployment environment variables (VITE_API_URL).
  */
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 async function handleResponse(response) {
   if (!response.ok) {
@@ -12,7 +13,7 @@ async function handleResponse(response) {
       const errData = await response.json();
       errorMsg = errData.detail || JSON.stringify(errData);
     } catch (e) {
-      // fallback text
+      // fallback
     }
     throw new Error(errorMsg);
   }

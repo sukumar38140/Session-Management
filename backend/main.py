@@ -2,6 +2,7 @@
 backend/main.py
 FastAPI Web Application for SmartSession.
 Serves real-time intent classification, adaptive content ranking, friction heatmap tracking, and SVS analytics.
+Supports dynamic cloud PORT environment variables and auto-model training on deployment.
 """
 
 import os
@@ -12,7 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 # Local imports
-from backend.explainer import IntentExplainer
 from backend.content_ranker import rank_content, DEFAULT_CONTENT_POOL
 from backend.friction_tracker import FrictionTracker
 from backend.session_value_score import generate_svs_trend
@@ -23,7 +23,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS Middleware setup
+# CORS Middleware setup - Allow all origins for production cloud deployment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,14 +36,33 @@ app.add_middleware(
 explainer_engine = None
 friction_tracker = FrictionTracker()
 
+def ensure_model_exists():
+    """Checks if trained model exists, if not, runs data generator & model training pipeline."""
+    model_path = os.path.join('backend', 'models', 'intent_model.pkl')
+    data_path = os.path.join('backend', 'data', 'sessions.csv')
+    
+    if not os.path.exists(data_path):
+        print("Dataset missing on server. Generating synthetic dataset...")
+        from backend.synthetic_data import generate_dataset
+        df = generate_dataset(n_samples=10000, random_seed=42)
+        os.makedirs(os.path.join('backend', 'data'), exist_ok=True)
+        df.to_csv(data_path, index=False)
+        
+    if not os.path.exists(model_path):
+        print("Trained model missing on server. Training LightGBM model...")
+        from backend.train_model import train_intent_model
+        train_intent_model()
+
 @app.on_event("startup")
 def startup_event():
     global explainer_engine
     try:
+        ensure_model_exists()
+        from backend.explainer import IntentExplainer
         explainer_engine = IntentExplainer()
         print("IntentExplainer engine successfully initialized.")
     except Exception as e:
-        print(f"Warning: IntentExplainer initialization deferred: {e}")
+        print(f"Warning during model initialization: {e}")
 
 # Pydantic Schemas
 class SessionFeatures(BaseModel):
@@ -81,6 +100,15 @@ class EventLogRequest(BaseModel):
     dwell_seconds: float = Field(..., ge=0.0)
 
 # Endpoints
+@app.get("/", summary="Root API info endpoint")
+def root_endpoint():
+    return {
+        "service": "SmartSession Real-Time Engine API",
+        "status": "online",
+        "docs_url": "/docs",
+        "endpoints": ["/predict-intent", "/rank-content", "/log-event", "/friction-heatmap", "/session-value-score"]
+    }
+
 @app.get("/health", summary="Health check endpoint")
 def health_check():
     model_loaded = explainer_engine is not None
@@ -95,6 +123,8 @@ def predict_intent(features: SessionFeatures):
     global explainer_engine
     if explainer_engine is None:
         try:
+            ensure_model_exists()
+            from backend.explainer import IntentExplainer
             explainer_engine = IntentExplainer()
         except Exception as e:
             raise HTTPException(
@@ -150,4 +180,5 @@ def get_content_pool():
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
