@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartsession"
+version = "1.0.0"
+description = "SmartSession Real-Time Session Intent Detection Engine"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.vercel]
+entrypoint = "backend.main:app"
