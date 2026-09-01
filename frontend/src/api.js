@@ -1,10 +1,11 @@
 /**
  * frontend/src/api.js
  * Central API client module for SmartSession FastAPI backend.
- * Dynamically supports production deployment environment variables (VITE_API_URL).
+ * Dynamically supports production Vercel deployment (same origin relative URLs) & local dev fallback.
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const isLocalDev = typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '3000';
+const BASE_URL = import.meta.env.VITE_API_URL || (isLocalDev ? 'http://localhost:8000' : '');
 
 async function handleResponse(response) {
   if (!response.ok) {

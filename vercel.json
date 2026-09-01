@@ -1,8 +1,61 @@
 {
+  "builds": [
+    {
+      "src": "backend/main.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/health",
       "dest": "backend/main.py"
+    },
+    {
+      "src": "/predict-intent",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/rank-content",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/log-event",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/friction-heatmap",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/session-value-score",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/content-pool",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/openapi.json",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "frontend/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/$1"
     }
   ]
 }
