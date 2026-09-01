@@ -1,61 +1,65 @@
 {
   "builds": [
     {
-      "src": "backend/main.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "frontend/package.json",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/health",
-      "dest": "backend/main.py"
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
     },
     {
       "src": "/predict-intent",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/rank-content",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/log-event",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/friction-heatmap",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/session-value-score",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/content-pool",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/health",
+      "dest": "api/index.py"
     },
     {
       "src": "/docs",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/openapi.json",
-      "dest": "backend/main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/assets/(.*)",
-      "dest": "frontend/assets/$1"
+      "dest": "/assets/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/$1"
+      "dest": "/index.html"
     }
   ]
 }

@@ -23,8 +23,8 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["backend*"]
+include = ["backend*", "api*"]
 exclude = ["frontend*", "tests*"]
 
 [tool.vercel]
-entrypoint = "backend.main:app"
+entrypoint = "api/index.py"
