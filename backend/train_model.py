@@ -1,7 +1,7 @@
 """
 backend/train_model.py
 Trains the Intent Classifier for SmartSession.
-Supports LightGBM with automatic scikit-learn GradientBoostingClassifier fallback for cloud environments without libgomp.so.1.
+Uses scikit-learn GradientBoostingClassifier for 100% serverless compatibility (zero C++ libgomp.so.1 system dependencies).
 Encodes categoricals with LabelEncoder, evaluates against success criteria (Acc >= 82%, F1 >= 0.80, AUC >= 0.88),
 and saves trained model and encoders to backend/models/.
 """
@@ -15,18 +15,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, classification_report, confusion_matrix
 from sklearn.ensemble import GradientBoostingClassifier
-
-# Try importing LightGBM, fallback to GradientBoostingClassifier if libgomp.so.1 is missing
-USE_LIGHTGBM = False
-try:
-    import lightgbm as lgb
-    # Verify binary load
-    _dummy = lgb.LGBMClassifier(n_estimators=1)
-    USE_LIGHTGBM = True
-    print("LightGBM successfully loaded.")
-except (ImportError, OSError) as e:
-    print(f"LightGBM unavailable ({e}). Using scikit-learn GradientBoostingClassifier fallback...")
-    USE_LIGHTGBM = False
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -76,27 +64,14 @@ def train_intent_model():
     )
     
     print(f"Training set: {X_train.shape}, Test set: {X_test.shape}")
+    print("Training Scikit-Learn GradientBoostingClassifier (100% Serverless & libgomp-free)...")
     
-    if USE_LIGHTGBM:
-        print("Training LightGBM Classifier...")
-        clf = lgb.LGBMClassifier(
-            n_estimators=300,
-            learning_rate=0.1,
-            max_depth=6,
-            num_leaves=31,
-            class_weight='balanced',
-            random_state=42,
-            verbose=-1
-        )
-    else:
-        print("Training Scikit-Learn GradientBoostingClassifier (libgomp-safe)...")
-        clf = GradientBoostingClassifier(
-            n_estimators=200,
-            learning_rate=0.08,
-            max_depth=5,
-            random_state=42
-        )
-        
+    clf = GradientBoostingClassifier(
+        n_estimators=200,
+        learning_rate=0.08,
+        max_depth=5,
+        random_state=42
+    )
     clf.fit(X_train, y_train)
     
     # Predictions
@@ -139,7 +114,7 @@ def train_intent_model():
     metadata = {
         'feature_cols': feature_cols,
         'cat_cols': cat_cols,
-        'model_type': 'LightGBM' if USE_LIGHTGBM else 'GradientBoostingClassifier',
+        'model_type': 'GradientBoostingClassifier',
         'metrics': {
             'accuracy': float(acc),
             'f1_weighted': float(f1),
