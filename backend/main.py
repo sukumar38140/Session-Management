@@ -36,16 +36,19 @@ app.add_middleware(
 explainer_engine = None
 friction_tracker = FrictionTracker()
 
+# Absolute path base directory for serverless environments
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def ensure_model_exists():
     """Checks if trained model exists, if not, runs data generator & model training pipeline."""
-    model_path = os.path.join('backend', 'models', 'intent_model.pkl')
-    data_path = os.path.join('backend', 'data', 'sessions.csv')
+    model_path = os.path.join(BASE_DIR, 'backend', 'models', 'intent_model.pkl')
+    data_path = os.path.join(BASE_DIR, 'backend', 'data', 'sessions.csv')
     
     if not os.path.exists(data_path):
         print("Dataset missing on server. Generating synthetic dataset...")
         from backend.synthetic_data import generate_dataset
         df = generate_dataset(n_samples=10000, random_seed=42)
-        os.makedirs(os.path.join('backend', 'data'), exist_ok=True)
+        os.makedirs(os.path.join(BASE_DIR, 'backend', 'data'), exist_ok=True)
         df.to_csv(data_path, index=False)
         
     if not os.path.exists(model_path):

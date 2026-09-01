@@ -12,10 +12,12 @@ import numpy as np
 import pandas as pd
 import shap
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class IntentExplainer:
     def __init__(self, models_dir=None):
         if models_dir is None:
-            models_dir = os.path.join('backend', 'models')
+            models_dir = os.path.join(BASE_DIR, 'backend', 'models')
             
         model_path = os.path.join(models_dir, 'intent_model.pkl')
         encoders_path = os.path.join(models_dir, 'encoders.pkl')

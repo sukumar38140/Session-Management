@@ -15,8 +15,10 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, classification_report, confusion_matrix
 import lightgbm as lgb
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def train_intent_model():
-    data_path = os.path.join('backend', 'data', 'sessions.csv')
+    data_path = os.path.join(BASE_DIR, 'backend', 'data', 'sessions.csv')
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"{data_path} not found! Run backend/synthetic_data.py first.")
         
@@ -124,8 +126,8 @@ def train_intent_model():
     for feat, imp in feat_imp[:5]:
         print(f"  {feat:30s}: {imp}")
         
-    # Save Model Artifacts
-    models_dir = os.path.join('backend', 'models')
+    # Save Artifacts
+    models_dir = os.path.join(BASE_DIR, 'backend', 'models')
     os.makedirs(models_dir, exist_ok=True)
     
     model_path = os.path.join(models_dir, 'intent_model.pkl')
